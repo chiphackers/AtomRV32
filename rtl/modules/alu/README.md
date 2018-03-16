@@ -23,8 +23,8 @@
 
 ALU SUPORTED OPERATIONS: 
 
-   5'b00000 :   ADD
-           
+    5'b00000 :   ADD
+   
     5'b00001 :  SUB
                 
     5'b00010 :  SLTU                 
