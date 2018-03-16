@@ -3,7 +3,8 @@
 	- MUX_UP
 	- MUX_DOWN
 	- ALU
-
+	
+(WATCH IN RAW MODE)
 
 | PC |  RS1  |  |  RS2  |  IMM  |
      |                  |
