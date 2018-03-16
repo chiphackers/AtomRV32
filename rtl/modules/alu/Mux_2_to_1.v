@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Sasindu Geemal (DoomsDay)
 // 
 // Create Date: 03/15/2018 10:37:05 PM
 // Design Name: 

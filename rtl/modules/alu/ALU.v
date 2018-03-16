@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Sasindu Geemal (DoomsDay)
 // 
 // Create Date: 03/15/2018 10:41:23 PM
 // Design Name: 
@@ -28,7 +28,7 @@ module ALU(
     );
 
 parameter DATA_WIDTH = 32;
-parameter FUNC_WIDTH = 4;
+parameter FUNC_WIDTH = 5;
 
 input  [DATA_WIDTH-1 : 0]   bus_A;
 input  [DATA_WIDTH-1 : 0]   bus_B;
@@ -42,13 +42,16 @@ wire signed [DATA_WIDTH-1 : 0]   bus_B_SIGNED;
 
 assign bus_out = op_reg;
 
+assign bus_A_SIGNED = bus_A;
+assign bus_B_SIGNED = bus_B;
+
 always @(*) begin
     case (alu_ctrl)
-    4'b0000 : op_reg = bus_A + bus_B;
+    5'b00000 : op_reg = bus_A + bus_B;                      // ADD
            
-    4'b0001 : op_reg = bus_B +{~bus_A + 1'b1};  
+    5'b00001 : op_reg = bus_B +{~bus_A + 1'b1};            // SUB
                 
-    4'b0010 :                               
+    5'b00010 :                                            //  SLTU                 
         begin
             if(bus_A<bus_B)
                 op_reg = 32'd1;
@@ -56,29 +59,37 @@ always @(*) begin
                 op_reg = 32'd0;
         end
         
-    4'b0011 : op_reg = bus_A&bus_B;
+    5'b000011 : op_reg = bus_A&bus_B;                  // AND
         
-    4'b0100 : op_reg = bus_A|bus_B;
+    5'b00100 : op_reg = bus_A|bus_B;                   // OR
         
-    4'b0101 : op_reg = bus_A^bus_B;
+    5'b00101 : op_reg = bus_A^bus_B;                   // XOR
         
-    4'b0110 : op_reg = bus_B<<bus_A;
+    5'b00110 : op_reg = bus_B<<bus_A;                 // SLL
         
-    4'b0111 : op_reg = bus_B>>bus_A; 
+    5'b00111 : op_reg = bus_B>>bus_A;                 // SRL
      
-    4'b1000 : op_reg = bus_A>>>bus_B;
+    5'b01000 : op_reg = bus_A>>>bus_B;              // SRA
         
-    4'b1001 : op_reg = bus_A;
+    5'b01001 : op_reg = bus_A;                      // PASS A
         
-    4'b1010 : op_reg = bus_B;
+    5'b01010 : op_reg = bus_B;                      // PASS B
 
-    4'bxx00:  op_reg = bus_A == bus_B; 
+    5'b01011:  op_reg = {31'd0, (bus_A == bus_B)}; 
     
-    4'bxx01:  op_reg = bus_A != bus_B;
+    5'b01100:  op_reg = {31'd0, (bus_A != bus_B)};
     
-    4'bxx10:  op_reg = bus_A < bus_B;
+    5'b01101:  op_reg = {31'd0, (bus_A < bus_B)};
     
-    4'bxx11:  op_reg = bus_A >= bus_B;
+    5'b01110:  op_reg = {31'd0, (bus_A >= bus_B)};
+
+    5'b01111 :                                            //  SLTU                 
+        begin
+            if(bus_A_SIGNED<bus_B_SIGNED)
+                op_reg = 32'd1;
+            else
+                op_reg = 32'd0;
+        end
     
     default : op_reg = 32'd0;    
      
