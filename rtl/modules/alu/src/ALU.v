@@ -47,9 +47,9 @@ assign bus_B_SIGNED = bus_B;
 
 always @(*) begin
     case (alu_ctrl)
-    5'b00000 : op_reg = bus_A + bus_B;                      // ADD
+    5'b00000 : op_reg = bus_A + bus_B;                      // ADDU
            
-    5'b00001 : op_reg = bus_B +{~bus_A + 1'b1};            // SUB
+    5'b00001 : op_reg = bus_B +{~bus_A + 1'b1};            // SUBU
                 
     5'b00010 :                                            //  SLTU                 
         begin
@@ -90,6 +90,9 @@ always @(*) begin
             else
                 op_reg = 32'd0;
         end
+   5'b10000 : op_reg = bus_A_SIGNED + bus_B_SIGNED;                      // ADDS
+               
+   5'b10001 : op_reg = bus_B_SIGNED +{~bus_A_SIGNED + 1'b1};            // SUBS
     
     default : op_reg = 32'd0;    
      
