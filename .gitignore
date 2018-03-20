@@ -1,1 +1,7 @@
+#editor files
 *.swp
+
+#vivado files
+*.log
+*.jou
+*.zip

@@ -1,0 +1,11 @@
+create_project "AtomRV32I" -in_memory
+
+add_files ../rtl/modules/instruction_decoder/src/instruction_decoder.v
+add_files ../rtl/modules/immediate/src/immediate.v
+add_files ../rtl/modules/register_file/src/register_file.v
+add_files ../rtl/modules/alu/src/Mux_2_to_1.v
+add_files ../rtl/modules/alu/src/ALU.v
+add_files ../rtl/modules/alu/src/ALU_TOP.v
+add_files ../rtl/AtomRV32I.v
+
+synth_design -name AtomRV32I -top AtomRV32I

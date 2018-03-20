@@ -1,0 +1,11 @@
+read_verilog ../rtl/modules/instruction_decoder/src/instruction_decoder.v
+read_verilog ../rtl/modules/immediate/src/immediate.v
+read_verilog ../rtl/modules/register_file/src/register_file.v
+read_verilog ../rtl/modules/alu/src/Mux_2_to_1.v
+read_verilog ../rtl/modules/alu/src/ALU.v
+read_verilog ../rtl/modules/alu/src/ALU_TOP.v
+read_verilog ../rtl/AtomRV32I.v
+
+synth
+
+

@@ -59,7 +59,7 @@ always @(*) begin
                 op_reg = 32'd0;
         end
         
-    5'b000011 : op_reg = bus_A&bus_B;                  // AND
+    5'b00011 : op_reg = bus_A&bus_B;                  // AND
         
     5'b00100 : op_reg = bus_A|bus_B;                   // OR
         

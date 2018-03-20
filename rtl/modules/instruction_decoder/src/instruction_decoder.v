@@ -4,27 +4,22 @@ module instruction_decoder#(
 	parameter REG_FILE_DEPTH = 32,
     parameter REG_FILE_ADDR_LEN = $clog2(REG_FILE_DEPTH)
 )(
-    input clk,
-    input en,
-
-    input [XLEN-1:0] instr
+    input [XLEN-1:0] instr,
     
-    output [REG_FILE_ADDR_LEN-1:0] reg rs1, //read address 1
-    output [REG_FILE_ADDR_LEN-1:0] reg rs2, //read address 2
-    output [REG_FILE_ADDR_LEN-1:0] reg rd,  //write address
-
-    // Following registers are indicating the instruction type
-    output reg is_type_R, is_typeI, is_type_S, is_type_B, is_type_U, is_type_J,
-    // special control signals
-    output reg is_alu_op
-);
-
+    output reg [REG_FILE_ADDR_LEN-1:0] rs1, //read address 1
+    output reg [REG_FILE_ADDR_LEN-1:0] rs2, //read address 2
+    output reg [REG_FILE_ADDR_LEN-1:0] rd,  //write address
 
     // Following registers are holding different parts of the instruction
     // Validity of the data contain in them depends on the tpe of instruction
-    reg [2:0] funct3;
-    reg [6:0] funct7;
-    reg [REG_FILE_ADDR_LEN-1:0] rs1, rs2, rd;
+    output reg [2:0] funct3,
+    output reg [6:0] funct7,
+
+    // Following registers are indicating the instruction type
+    output reg is_type_R, is_type_I, is_type_S, is_type_B, is_type_U, is_type_J,
+    // special control signals
+    output reg is_alu_op
+);
 
     always @(*) begin
         is_type_R  = (instr[OP_LEN-1:0] == 7'b0110011);
