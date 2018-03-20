@@ -5,8 +5,8 @@ The following control signals are subjected to change.
 
 ## ALU Control Signals ##
 
-is\_alu\_op signal works as the enable signal of ALU.
-is\_type\_R select whether the instruction is R or I type.
+*is\_alu\_op* signal works as the enable signal of ALU.<br>
+*is\_type\_R* select whether the instruction is R or I type.<br>
 In addtion instruction decoder will output following control signals to the ALU
 
 index|  name       | Length | Description
@@ -17,16 +17,15 @@ index|  name       | Length | Description
 
 ### Based on the above signals decoded ALU opeartion is follows ###
 
- Encoding | Operation | Description
-    3:1 0 |           |
+Encoding  | Operation | Description
 ----------|-----------|--------------
-    000 0 | ADD       | Addition
-    000 1 | SUB       | Substration
-    001 0 | SLL       | Logical left shift
-    010 0 | SLT       | Less than rd = rs1 < rs2
-    011 0 | SLTU      | Unsigned SLT
-    100 0 | XOR       | XOR
-    101 0 | SRL       | Logical right shift
-    101 1 | SRA       | Arithmatic right shift
-    110 0 | OR        | OR
-    111 0 | AND       | AND
+000 0     | ADD       | Addition
+000 1     | SUB       | Substration
+001 0     | SLL       | Logical left shift
+010 0     | SLT       | Less than rd = rs1 < rs2
+011 0     | SLTU      | Unsigned SLT
+100 0     | XOR       | XOR
+101 0     | SRL       | Logical right shift
+101 1     | SRA       | Arithmatic right shift
+110 0     | OR        | OR
+111 0     | AND       | AND
