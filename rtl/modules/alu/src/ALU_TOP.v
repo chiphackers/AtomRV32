@@ -1,25 +1,3 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: Sasindu Geemal (DoomsDay)
-// 
-// Create Date: 03/16/2018 11:14:08 PM
-// Design Name: 
-// Module Name: ALU_TOP
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-
 module ALU_TOP(
 	PC_IN, 
 	RS1_IN, 
@@ -29,7 +7,7 @@ module ALU_TOP(
 	MUX1_CTRL, 
 	MUX2_CTRL, 
 	ALU_OUT
-    );
+);
 
 
 parameter DATA_WIDTH = 32;

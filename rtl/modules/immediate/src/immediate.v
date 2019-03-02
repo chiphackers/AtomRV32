@@ -1,31 +1,10 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: Ashen Ekanayake
-// 
-// Create Date: 03/05/2018 10:12:31 PM
-// Design Name: 
-// Module Name: immediate
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 module immediate#(
 	parameter XLEN = 32
-	)
-	(
+)(
 	input        [XLEN-1:0] instruction,
     input        is_type_I, is_type_S, is_type_B, is_type_U, is_type_J,
 	output reg  [XLEN-1:0] imm_out
-    );
+);
     
     wire [4:0] intr = {is_type_I, is_type_S, is_type_B, is_type_U, is_type_J};
 
