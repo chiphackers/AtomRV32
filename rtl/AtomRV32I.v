@@ -3,25 +3,28 @@ module AtomRV32I #(
     parameter REG_ADDR_LEN = $clog2(XLEN),
     parameter PC_RESET = 32'h0000_0000
 )(
-    input clk,
-    input rst_n,
-    input [XLEN-1:0] instr
+    input  clk,
+    input  rst_n,
+    input  [XLEN-1:0] instr,
+    output [XLEN-1:0] instr_address,
+
+    input  [XLEN-1:0] mem_in,
+    output [XLEN-1:0] mem_out,
+    output [XLEN-1:0] mem_addr,
+    output [1:0]      mem_ctrl
 );
 
 /*
 * Program Counter
 */
 reg [XLEN-1: 0] PC;
-
+assign instr_address = PC;
 
 /*
 * Intermediate wires
 */
 wire [REG_ADDR_LEN-1: 0] rs1, rs2, rd, wb_rd;
-wire [XLEN-1: 0]         r_data1, r_data2, wdata, im_data;
-wire [2:0]               func3;
-wire [6:0]               func7;
-wire                     is_type_R;
+wire [XLEN-1: 0]         r_data1, r_data2, wdata, im_data, mem_data;
 
 /*
 * pipeline registers
@@ -85,18 +88,15 @@ immediate unit_imm(
     .imm_out(im_data)
 );
 
-assign func3 = r_ex_instr[14:12];
-assign func7 = r_ex_instr[31:25];
-assign is_type_R = (r_ex_instr[6:0] == 7'b0110011)? 1'b1 : 1'b0; 
-
 ALU_TOP unit_alu(
     .PC_IN(r_ex_pc),
     .RS1_IN(r_ex_rs1),
     .RS2_IN(r_ex_rs2),
     .IMM_IN(im_data),
-    .ALU_CTRL({funct3, funct7[5]}),
+    .OPCODE(r_ex_instr[6:0]),
+    .FUNCT3(r_ex_instr[14:12]),
+    .FUNCT7(r_ex_instr[31:25]),
     .MUX1_CTRL(1'b0),
-    .MUX2_CTRL(is_type_R),
     .ALU_OUT(wdata)
 );
 
@@ -119,6 +119,25 @@ end
 /*
 * stage #3 pipeline end
 */
+
+/*
+* Data Cache
+* - This module takes two clock cycles
+* - It bypass memory pipeline stage and directly write back to register file
+*/
+data_cache unit_dcache (
+    .clk(clk),
+    .rst_n(rst_n),
+    .data_addr(wdata),
+    .data_i(r_mem_rs2),
+    .data_o(mem_data),
+    .OPCODE(r_mem_inst[6:0]),
+    .FUNCT3(r_mem_inst[2:0]),
+    .mem_in(mem_in),
+    .mem_out(mem_out),
+    .mem_addr(mem_addr),
+    .mem_ctrl(mem_ctrl)
+);
 
 /*
 * stage #4 pipeline begin   (write back)
