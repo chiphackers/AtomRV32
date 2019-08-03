@@ -1,38 +1,21 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: Sasindu Geemal (DoomsDay)
-// 
-// Create Date: 03/15/2018 10:41:23 PM
-// Design Name: 
-// Module Name: ALU
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
 
 module ALU(
     bus_A,
     bus_B,
-    alu_ctrl,
+    func3,
+    func7,
     bus_out
     );
 
 parameter DATA_WIDTH = 32;
-parameter FUNC_WIDTH = 5;
+parameter FUNC3_WIDTH = 3;
+parameter FUNC7_WIDTH = 7;
 
 input  [DATA_WIDTH-1 : 0]   bus_A;
 input  [DATA_WIDTH-1 : 0]   bus_B;
-input  [FUNC_WIDTH-1 : 0] alu_ctrl;
+input  [FUNC3_WIDTH-1: 0]   func3;
+input  [FUNC7_WIDTH-1: 0]   func7;
 output [DATA_WIDTH-1 : 0]   bus_out;
 
 reg [DATA_WIDTH-1 : 0] op_reg;
@@ -45,56 +28,58 @@ assign bus_out = op_reg;
 assign bus_A_SIGNED = bus_A;
 assign bus_B_SIGNED = bus_B;
 
+//************************************************
+//  ALU_CTRL => { FUNC3 , FUNC7[5] }
+//************************************************
+//  000-0 : ADD
+//  000-1 : SUB
+//  001-0 : SLL
+//  010-0 : SLT
+//  011-0 : SLTU
+//  100-0 : XOR
+//  101-0 : SRL
+//  101-1 : SRA
+//  110-0 : OR
+//  111-0 : AND
+//*************************************************
 always @(*) begin
-    case (alu_ctrl)
-    5'b00000 : op_reg = bus_A + bus_B;                      // ADDU
-           
-    5'b00001 : op_reg = bus_B +{~bus_A + 1'b1};            // SUBU
-                
-    5'b00010 :                                            //  SLTU                 
-        begin
-            if(bus_A<bus_B)
+    case (func3)
+        3'b000 : begin
+            if(func7[5] == 1'b0)
+                op_reg = bus_A + bus_B;                     // ADDU
+            else
+                op_reg = bus_B +{~bus_A + 1'b1};            // SUBU
+        end
+        3'b001 : op_reg = bus_B<<bus_A;                     // SLL
+
+        3'b010 : begin                                      //  SLT      
+            if(bus_A_SIGNED < bus_B_SIGNED)
                 op_reg = 32'd1;
             else
                 op_reg = 32'd0;
         end
-        
-    5'b00011 : op_reg = bus_A&bus_B;                  // AND
-        
-    5'b00100 : op_reg = bus_A|bus_B;                   // OR
-        
-    5'b00101 : op_reg = bus_A^bus_B;                   // XOR
-        
-    5'b00110 : op_reg = bus_B<<bus_A;                 // SLL
-        
-    5'b00111 : op_reg = bus_B>>bus_A;                 // SRL
-     
-    5'b01000 : op_reg = bus_A>>>bus_B;              // SRA
-        
-    5'b01001 : op_reg = bus_A;                      // PASS A
-        
-    5'b01010 : op_reg = bus_B;                      // PASS B
 
-    5'b01011:  op_reg = {31'd0, (bus_A == bus_B)}; 
-    
-    5'b01100:  op_reg = {31'd0, (bus_A != bus_B)};
-    
-    5'b01101:  op_reg = {31'd0, (bus_A < bus_B)};
-    
-    5'b01110:  op_reg = {31'd0, (bus_A >= bus_B)};
-
-    5'b01111 :                                            //  SLTU                 
-        begin
-            if(bus_A_SIGNED<bus_B_SIGNED)
+        3'b011 : begin                                      //  SLTU      
+            if(bus_A < bus_B)
                 op_reg = 32'd1;
             else
                 op_reg = 32'd0;
         end
-   5'b10000 : op_reg = bus_A_SIGNED + bus_B_SIGNED;                      // ADDS
-               
-   5'b10001 : op_reg = bus_B_SIGNED +{~bus_A_SIGNED + 1'b1};            // SUBS
-    
-    default : op_reg = 32'd0;    
+
+        3'b100 : op_reg = bus_A^bus_B;                      // XOR
+
+        3'b101 : begin
+            if(func7[5] == 1'b0)
+                op_reg = bus_B>>bus_A;                      // SRL
+            else
+                op_reg = bus_B_SIGNED >>> bus_A_SIGNED;     // SRA
+        end
+        
+        3'b110 : op_reg = bus_A&bus_B;                      // AND
+        
+        3'b111 : op_reg = bus_A|bus_B;                      // OR
+        
+        default : op_reg = 32'd0;    
      
     endcase
     

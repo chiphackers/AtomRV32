@@ -73,8 +73,8 @@ always@(posedge clk) begin
         r_ex_inst   <= 32'h0;
     end else begin
         r_ex_pc     <= PC;
-        r_ex_rs1    <= rs1;
-        r_ex_rs2    <= rs2;
+        r_ex_rs1    <= r_data1;
+        r_ex_rs2    <= r_data2;
         r_ex_instr  <= instr;
     end
 end

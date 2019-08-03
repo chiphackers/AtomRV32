@@ -53,12 +53,11 @@ Mux_2_to_1 MUX_DOWN(
     .CTRL(is_type_R)
     );
 
-
-
 ALU alu_a(
     .bus_A(bus_A),
     .bus_B(bus_B),
-    .alu_ctrl(ALU_CTRL),
+    .func3(FUNCT3),
+    .func7(FUNCT7),
     .bus_out(ALU_OUT)
     );
 
