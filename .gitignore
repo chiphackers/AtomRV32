@@ -7,4 +7,4 @@
 *.zip
 
 #build folder
-./build/
+./build
