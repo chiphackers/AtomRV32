@@ -5,3 +5,6 @@
 *.log
 *.jou
 *.zip
+
+#build folder
+./build/
