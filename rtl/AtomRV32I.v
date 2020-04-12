@@ -26,7 +26,7 @@ assign instr_address = PC;
 wire [REG_ADDR_LEN-1: 0] rs1, rs2, rd, wb_rd;
 wire [6:0]               opcode;
 wire [2:0]               funct3;
-wire [6:0]               funct7;
+wire [6:0]               funct7, types;
 wire [XLEN-1: 0]         r_data1, r_data2, wdata, im_data, mem_data;
 
 /*
@@ -39,9 +39,8 @@ reg [XLEN-1: 0]        r_de_pc, r_de_inst;
 
 reg [REG_ADDR_LEN-1:0] r_ex_rs1, r_ex_rs2, r_ex_rd;
 reg [XLEN-1:0]         r_ex_inst, r_ex_pc, r_ex_imm;
-reg [6:0]              r_ex_opcode;
 reg [2:0]              r_ex_funct3;
-reg [6:0]              r_ex_funct7;
+reg [6:0]              r_ex_funct7, r_ex_types;
 
 reg [REG_ADDR_LEN-1:0] r_mem_rs2;
 reg [XLEN-1:0]         r_mem_wdata, r_mem_inst, r_mem_pc;
@@ -91,7 +90,8 @@ instruction_decoder unit_id(
     .rd(rd),
     .opcode(opcode),
     .funct3(funct3),
-    .funct7(funct7)
+    .funct7(funct7),
+    .types(types)
 );
 
 register_file unit_regfile(
@@ -109,6 +109,7 @@ immediate unit_imm(
     .instr(r_de_instr),
     .opcode(opcode),
     .funct3(funct3),
+    .types(types),
     .imm_out(im_data)
 );
 
@@ -120,14 +121,20 @@ always@(posedge clk) begin
         r_ex_pc     <= PC_RESET;
         r_ex_rs1    <= 32'h0;
         r_ex_rs2    <= 32'h0;
-        r_ex_inst   <= 32'h0;
+        r_ex_rd     <= 32'h0;
         r_ex_imm    <= 32'h0;
+        r_ex_funct3 <= 3'h0;
+        r_ex_funct7 <= 7'h0;
+        r_ex_types  <= 7'h0;
     end else begin
         r_ex_pc     <= PC;
         r_ex_rs1    <= r_data1;
         r_ex_rs2    <= r_data2;
-        r_ex_instr  <= instr;
+        r_ex_rd     <= rd;
         r_ex_imm    <- im_data;
+        r_ex_funct3 <= func3;
+        r_ex_funct7 <= funct7;
+        r_ex_types  <= types;
     end
 end
 /*
@@ -140,9 +147,9 @@ ALU_TOP unit_alu(
     .RS1_IN(r_ex_rs1),
     .RS2_IN(r_ex_rs2),
     .IMM_IN(r_ex_imm),
-    .OPCODE(r_ex_opcode),
     .FUNCT3(r_ex_funct3),
     .FUNCT7(r_ex_funct7),
+    .TYPES(r_ex_types),
     .ALU_OUT(wdata)
 );
 

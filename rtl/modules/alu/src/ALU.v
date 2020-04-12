@@ -3,19 +3,15 @@
 module ALU(
     bus_A,
     bus_B,
-    func3,
-    func7,
+    alu_ctrl,
     bus_out
     );
 
 parameter DATA_WIDTH = 32;
-parameter FUNC3_WIDTH = 3;
-parameter FUNC7_WIDTH = 7;
 
 input  [DATA_WIDTH-1 : 0]   bus_A;
 input  [DATA_WIDTH-1 : 0]   bus_B;
-input  [FUNC3_WIDTH-1: 0]   func3;
-input  [FUNC7_WIDTH-1: 0]   func7;
+input  [3: 0]               alu_ctrl;
 output [DATA_WIDTH-1 : 0]   bus_out;
 
 reg [DATA_WIDTH-1 : 0] op_reg;
@@ -43,41 +39,37 @@ assign bus_B_SIGNED = $signed(bus_B);
 //  111-0 : AND
 //*************************************************
 always @(*) begin
-    case (func3)
-        3'b000 : begin
-            if(func7[5] == 1'b0)
-                op_reg = bus_A + bus_B;                     // ADDU
-            else
-                op_reg = bus_B +{~bus_A + 1'b1};            // SUBU
-        end
-        3'b001 : op_reg = bus_B<<bus_A;                     // SLL
+    case (alu_ctrl)
+        4'b0000 : op_reg = bus_A + bus_B;                     // ADDU
 
-        3'b010 : begin                                      //  SLT      
+        4'b0001 : op_reg = bus_B +{~bus_A + 1'b1};            // SUBU
+
+        4'b0010 : op_reg = bus_B<<bus_A;                     // SLL
+
+        4'b0100 : begin                                      //  SLT      
             if(bus_A_SIGNED < bus_B_SIGNED)
                 op_reg = 32'd1;
             else
                 op_reg = 32'd0;
         end
 
-        3'b011 : begin                                      //  SLTU      
+        4'b0110 : begin                                      //  SLTU      
             if(bus_A < bus_B)
                 op_reg = 32'd1;
             else
                 op_reg = 32'd0;
         end
 
-        3'b100 : op_reg = bus_A^bus_B;                      // XOR
+        4'b1000 : op_reg = bus_A^bus_B;                      // XOR
 
-        3'b101 : begin
-            if(func7[5] == 1'b0)
-                op_reg = bus_B>>bus_A;                      // SRL
-            else
-                op_reg = bus_B_SIGNED >>> bus_A_SIGNED;     // SRA
-        end
+        4'b1010 : op_reg = bus_B>>bus_A;                      // SRL
+
+        4'b1011 : op_reg = bus_B_SIGNED >>> bus_A_SIGNED;     // SRA
+ 
         
-        3'b110 : op_reg = bus_A&bus_B;                      // AND
+        4'b1100 : op_reg = bus_A&bus_B;                      // AND
         
-        3'b111 : op_reg = bus_A|bus_B;                      // OR
+        4'b1110 : op_reg = bus_A|bus_B;                      // OR
         
         default : op_reg = 32'd0;    
      

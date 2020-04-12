@@ -5,34 +5,31 @@ module immediate#(
 	input        [XLEN-1:0]     instr,
     input        [OP_LEN-1:0]   opcode,
     input        [2:0]          funct3,
-	output reg   [XLEN-1:0]     imm_out,
-    output reg                  is_type_R
+    input        [6:0]          types,
+	output reg   [XLEN-1:0]     imm_out
 );
     
-    wire is_type_I, is_type_L, is_type_S, is_type_B, is_type_U, is_type_J;
-    wire [5:0] types = {is_type_I, is_type_L, is_type_S, is_type_B, is_type_U, is_type_J};
-
-    always @(*) begin
-        is_type_I  = (opcode == 7'b0010011);
-        is_type_L  = (opcode == 7'b0000011);
-        is_type_S  = (opcode == 7'b0100011);
-        is_type_B  = (opcode == 7'b1100011);
-        is_type_U  = (opcode == 7'b0110111) | (opcode == 7'b0010111);
-        is_type_J  = (opcode == 7'b1101111);
-    end
+    // types = { R-type, I-type, L-type, S-type, J-type, B-type, U-type }
 
 	always@(*)begin
-		case(types)
-            5'b100000 : begin
+		case(types[5:0])
+            // I-type
+            6'b100000 : begin
                         if(funct3[1:0] == 2'b01 )
                             imm_out = {27'b0,instr[24:20]};
                         else
                             imm_out = {{21{instr[31]}},instr[30:20]};
                        end
-			5'b001000 : imm_out = {{21{instr[31]}},instr[30:25],instr[11:8],instr[7]};
-			5'b000100 : imm_out = {{20{instr[31]}},instr[7],instr[30:25],instr[11:8],1'b0};
-			5'b000010 : imm_out = {instr[31:12],{12{1'b0}}};
-			5'b000001 : imm_out = {{12{instr[31]}},instr[19:12],instr[20],instr[30:21],1'b0};
+            // L-type
+            6'b010000 : imm_out = {{21{instr[31]}},instr[30:20]};
+            // S-type
+			6'b001000 : imm_out = {{21{instr[31]}},instr[30:25],instr[11:8],instr[7]};
+            // J-type
+			6'b000001 : imm_out = {{12{instr[31]}},instr[19:12],instr[20],instr[30:21],1'b0};
+            // B-type
+			6'b000100 : imm_out = {{20{instr[31]}},instr[7],instr[30:25],instr[11:8],1'b0};
+            // U-type
+			6'b000010 : imm_out = {instr[31:12],{12{1'b0}}};
 			default: imm_out = 32'd0;
 		endcase
 	end

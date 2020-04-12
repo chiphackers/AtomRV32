@@ -10,8 +10,35 @@ module instruction_decoder#(
     output reg [REG_FILE_ADDR_LEN-1:0] rd,  //write address
     output reg [6:0]                   opcode,
     output reg [2:0]                   funct3,
-    output reg [6:0]                   funct7
+    output reg [6:0]                   funct7,
+    output reg [6:0]                   types
 );
+
+    // OPCODE code names from Risc-V ISA manual
+    localparam OP     = 7'b0110011;
+    localparam OP_IMM = 7'b0010011;
+    localparam LOAD   = 7'b0000011;
+    localparam STORE  = 7'b0100011;
+    localparam BRANCH = 7'b1100011;
+    localparam JAL    = 7'b1101111;
+    localparam JALR   = 7'b1100111;
+    localparam LUI    = 7'b0110111;
+    localparam AUIPC  = 7'b0010111;
+
+    wire is_type_R, is_type_I, is_type_L, is_type_S, is_type_B, is_type_U, is_type_J;
+    wire [6:0] types = {is_type_R, is_type_I, is_type_L, is_type_S, is_type_J, is_type_B, is_type_U};
+
+    /*
+    * Type
+    */
+    assign is_type_R = (opcode == OP    )? 1'b1 : 1'b0;
+    assign is_type_I = (opcode == OP_IMM)? 1'b1 : 1'b0;
+    assign is_type_L = (opcode == LOAD  )? 1'b1 : 1'b0;
+    assign is_type_S = (opcode == STORE )? 1'b1 : 1'b0;
+    assign is_type_J = (opcode == JAL  || opcode == JALR  )? 1'b1 : 1'b0;
+    assign is_type_B = (opcode == BRANCH)? 1'b1 : 1'b0;
+    assign is_type_U = (opcode == LUI  || opcode == AUIPC )? 1'b1 : 1'b0;
+
 
     always @(*) begin
         rd     = instr[11:7];
