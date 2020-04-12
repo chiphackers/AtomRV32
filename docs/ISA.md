@@ -1,21 +1,5 @@
 # ALU operations
 
-## Immediate(I-type) instructions 
-
-
-| No | imm 12          | rs1 | func 3 | rd | opcode  | Assem | Sym                     |
-| -- | --------------  | --- | ------ | -- | ------- | ----- | ------------------------|
-|  1 |                 |     |   000  |    | 0010011 | ADDI  | rd = rs1 + S(imm)       |
-|  2 |                 |     |   010  |    | 0010011 | SLTI  | rd = (rs1< S(imm))? 1:0 |
-|  3 |                 |     |   011  |    | 0010011 | SLTIU | rd = (rs1<  imm)? 1 : 0 |
-|  4 |                 |     |   100  |    | 0010011 | XORI  | rd = rs1 ^ S(imm)       |
-|  5 |                 |     |   110  |    | 0010011 | ORI   | rd = rs1 or S(imm)      |
-|  6 |                 |     |   111  |    | 0010011 | ANDI  | rd = rs1 & S(imm)       |
-|  7 | 0000000 | shamt |     |   001  |    | 0010011 | SLLI  | rd = rs1 << shamt       |
-|  8 | 0000000 | shamt |     |   101  |    | 0010011 | SRLI  | rd = rs1 >> shamt       |
-|  9 | 0100000 | shamt |     |   101  |    | 0010011 | SRAI  | rd = S(rs1 >> shamt)    |
-
-
 ## Register(R-type) instructions
 
 | No | func 7  | rs2 | rs1 | func 3 | rd | opcode  | Assem | Sym                     |
@@ -30,6 +14,21 @@
 |  8 | 0100000 |     |     |   101  |    | 0110011 | SRA   | rd = S(rs1 >> rs2[4:0]) |
 |  9 | 0000000 |     |     |   110  |    | 0110011 | OR    | rd = rs1 or rs2         |
 | 10 | 0000000 |     |     |   111  |    | 0110011 | AND   | rd = rs1 & rs2          |
+
+## Immediate(I-type) instructions 
+
+| No | imm 12          | rs1 | func 3 | rd | opcode  | Assem | Sym                     |
+| -- | --------------  | --- | ------ | -- | ------- | ----- | ------------------------|
+|  1 |                 |     |   000  |    | 0010011 | ADDI  | rd = rs1 + S(imm)       |
+|  2 |                 |     |   010  |    | 0010011 | SLTI  | rd = (rs1< S(imm))? 1:0 |
+|  3 |                 |     |   011  |    | 0010011 | SLTIU | rd = (rs1<  imm)? 1 : 0 |
+|  4 |                 |     |   100  |    | 0010011 | XORI  | rd = rs1 ^ S(imm)       |
+|  5 |                 |     |   110  |    | 0010011 | ORI   | rd = rs1 or S(imm)      |
+|  6 |                 |     |   111  |    | 0010011 | ANDI  | rd = rs1 & S(imm)       |
+|  7 | 0000000 | shamt |     |   001  |    | 0010011 | SLLI  | rd = rs1 << shamt       |
+|  8 | 0000000 | shamt |     |   101  |    | 0010011 | SRLI  | rd = rs1 >> shamt       |
+|  9 | 0100000 | shamt |     |   101  |    | 0010011 | SRAI  | rd = S(rs1 >> shamt)    |
+
 
 # Memory operations
 
