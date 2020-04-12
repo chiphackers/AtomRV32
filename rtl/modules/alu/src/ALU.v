@@ -25,8 +25,8 @@ wire signed [DATA_WIDTH-1 : 0]   bus_B_SIGNED;
 
 assign bus_out = op_reg;
 
-assign bus_A_SIGNED = bus_A;
-assign bus_B_SIGNED = bus_B;
+assign bus_A_SIGNED = $signed(bus_A);
+assign bus_B_SIGNED = $signed(bus_B);
 
 //************************************************
 //  ALU_CTRL => { FUNC3 , FUNC7[5] }

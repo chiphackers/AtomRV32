@@ -24,6 +24,9 @@ assign instr_address = PC;
 * Intermediate wires
 */
 wire [REG_ADDR_LEN-1: 0] rs1, rs2, rd, wb_rd;
+wire [6:0]               opcode;
+wire [2:0]               funct3;
+wire [6:0]               funct7;
 wire [XLEN-1: 0]         r_data1, r_data2, wdata, im_data, mem_data;
 
 /*
@@ -31,8 +34,14 @@ wire [XLEN-1: 0]         r_data1, r_data2, wdata, im_data, mem_data;
 *
 * NOTE: Named after the pipeline stage the register send data
 */
+
+reg [XLEN-1: 0]        r_de_pc, r_de_inst;
+
 reg [REG_ADDR_LEN-1:0] r_ex_rs1, r_ex_rs2, r_ex_rd;
-reg [XLEN-1:0]         r_ex_inst, r_ex_pc;
+reg [XLEN-1:0]         r_ex_inst, r_ex_pc, r_ex_imm;
+reg [6:0]              r_ex_opcode;
+reg [2:0]              r_ex_funct3;
+reg [6:0]              r_ex_funct7;
 
 reg [REG_ADDR_LEN-1:0] r_mem_rs2;
 reg [XLEN-1:0]         r_mem_wdata, r_mem_inst, r_mem_pc;
@@ -40,15 +49,49 @@ reg [XLEN-1:0]         r_mem_wdata, r_mem_inst, r_mem_pc;
 reg [REG_ADDR_LEN-1:0] r_wb_rs2;
 reg [XLEN-1:0]         r_wb_wdata, r_wb_inst, r_wb_pc;
 
+
+/*
+* stage #1 pipeline begin (fetch)
+*/
+always@(posedge clk)begin
+    if(~rst_n) begin
+        PC <= PC_RESET;
+    end else begin
+        PC <= PC + 32'd4;
+    end
+end
+/*
+* stage #1 pipeline end
+*/
+
+/*
+* stage #2 pipeline begin (decode)
+*/
+always@(posedge clk) begin
+    if(~rst_n) begin
+        r_de_pc   <= PC_RESET;
+        r_de_inst <= 32'h0; 
+    end else begin
+        r_de_pc   <= PC;
+        r_de_inst <= instr;
+    end
+end
+/*
+* stage #2 pipeline end
+*/
+
 /*
 * Module instantiation
 */
 
 instruction_decoder unit_id(
-    .instr(instr),
+    .instr(r_de_inst),
     .rs1(rs1),
     .rs2(rs2),
     .rd(rd),
+    .opcode(opcode),
+    .funct3(funct3),
+    .funct7(funct7)
 );
 
 register_file unit_regfile(
@@ -62,8 +105,15 @@ register_file unit_regfile(
     .rd_data_2(r_data2)
 );
 
+immediate unit_imm(
+    .instr(r_de_instr),
+    .opcode(opcode),
+    .funct3(funct3),
+    .imm_out(im_data)
+);
+
 /*
-* stage #2 pipeline begin (execution)
+* stage #3 pipeline begin (execution)
 */
 always@(posedge clk) begin
     if(~rst_n) begin
@@ -71,37 +121,33 @@ always@(posedge clk) begin
         r_ex_rs1    <= 32'h0;
         r_ex_rs2    <= 32'h0;
         r_ex_inst   <= 32'h0;
+        r_ex_imm    <= 32'h0;
     end else begin
         r_ex_pc     <= PC;
         r_ex_rs1    <= r_data1;
         r_ex_rs2    <= r_data2;
         r_ex_instr  <= instr;
+        r_ex_imm    <- im_data;
     end
 end
 /*
-* stage #2 pipeline end
+* stage #3 pipeline end
 */
 
-
-immediate unit_imm(
-    .instr(r_ex_instr),
-    .imm_out(im_data)
-);
 
 ALU_TOP unit_alu(
     .PC_IN(r_ex_pc),
     .RS1_IN(r_ex_rs1),
     .RS2_IN(r_ex_rs2),
-    .IMM_IN(im_data),
-    .OPCODE(r_ex_instr[6:0]),
-    .FUNCT3(r_ex_instr[14:12]),
-    .FUNCT7(r_ex_instr[31:25]),
-    .MUX1_CTRL(1'b0),
+    .IMM_IN(r_ex_imm),
+    .OPCODE(r_ex_opcode),
+    .FUNCT3(r_ex_funct3),
+    .FUNCT7(r_ex_funct7),
     .ALU_OUT(wdata)
 );
 
 /*
-* stage #3 pipeline begin (memory)
+* stage #4 pipeline begin (memory)
 */
 always@(posedge clk)begin
     if(~rst_n) begin
@@ -117,7 +163,7 @@ always@(posedge clk)begin
     end
 end
 /*
-* stage #3 pipeline end
+* stage #4 pipeline end
 */
 
 /*
@@ -140,7 +186,7 @@ data_cache unit_dcache (
 );
 
 /*
-* stage #4 pipeline begin   (write back)
+* stage #5 pipeline begin   (write back)
 */
 always@(posedge clk)begin
     if(~rst_n) begin
@@ -153,6 +199,9 @@ always@(posedge clk)begin
         r_wb_inst   <= r_mem_inst;
     end
 end
+/*
+* stage #5 pipeline end
+*/
 
 assign wb_rd = r_wb_inst[11:7];
 

@@ -10,7 +10,6 @@ module ALU_TOP #(
     input [OPCODE_WIDTH-1 : 0]  OPCODE,
     input [2 : 0]               FUNCT3,
     input [6 : 0]               FUNCT7,
-    input 						MUX1_CTRL,
 
     output [DATA_WIDTH-1 : 0] 	ALU_OUT
 );
@@ -30,14 +29,15 @@ wire [DATA_WIDTH-1 : 0] bus_B;
 
 wire is_type_R, is_type_B, is_type_J;
 wire is_alu_op, is_mem_op;
-wire [FUNC_WIDTH-1:0] ALU_CTRL;
 
+/*
+* Type
+*/
 assign is_type_R = (OPCODE == OP    )? 1'b1 : 1'b0;
 assign is_type_B = (OPCODE == BRANCH)? 1'b1 : 1'b0;
 assign is_type_J = (OPCODE == JAL  || OPCODE == JALR  )? 1'b1 : 1'b0;
 assign is_alu_op = (OPCODE == OP   || OPCODE == OP_IMM)? 1'b1 : 1'b0;
 
-assign ALU_CTRL = (is_alu_op)? {1'b0, FUNCT3, FUNCT7[5]} : 5'b00000;
 
 Mux_2_to_1 MUX_UP(
     .in_1(PC_IN), 
