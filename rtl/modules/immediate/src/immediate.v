@@ -20,16 +20,18 @@ module immediate#(
                         else
                             imm_out = {{21{instr[31]}},instr[30:20]};
                        end
+            // JALR instruction
+            6'b100100 : imm_out = {{21{instr[31]}},instr[30:20]};
             // L-type
             6'b010000 : imm_out = {{21{instr[31]}},instr[30:20]};
             // S-type
 			6'b001000 : imm_out = {{21{instr[31]}},instr[30:25],instr[11:8],instr[7]};
             // J-type
-			6'b000001 : imm_out = {{12{instr[31]}},instr[19:12],instr[20],instr[30:21],1'b0};
+			6'b000100 : imm_out = {{12{instr[31]}},instr[19:12],instr[20],instr[30:21],1'b0};
             // B-type
-			6'b000100 : imm_out = {{20{instr[31]}},instr[7],instr[30:25],instr[11:8],1'b0};
+			6'b000010 : imm_out = {{20{instr[31]}},instr[7],instr[30:25],instr[11:8],1'b0};
             // U-type
-			6'b000010 : imm_out = {instr[31:12],{12{1'b0}}};
+			6'b000001 : imm_out = {instr[31:12],{12{1'b0}}};
 			default: imm_out = 32'd0;
 		endcase
 	end

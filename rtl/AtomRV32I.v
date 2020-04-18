@@ -27,7 +27,8 @@ wire [REG_ADDR_LEN-1: 0] rs1, rs2, rd, wb_rd;
 wire [6:0]               opcode;
 wire [2:0]               funct3;
 wire [6:0]               funct7, types;
-wire [XLEN-1: 0]         r_data1, r_data2, wdata, im_data, mem_data;
+wire [XLEN-1: 0]         r_data1, r_data2, alu_out, im_data, mem_data, wb_wdata;
+wire                     ex_type_J, wb_en, wb_type_L, wb_type_S, wb_type_J;
 
 /*
 * pipeline registers
@@ -42,11 +43,10 @@ reg [XLEN-1:0]         r_ex_inst, r_ex_pc, r_ex_imm;
 reg [2:0]              r_ex_funct3;
 reg [6:0]              r_ex_funct7, r_ex_types;
 
-reg [REG_ADDR_LEN-1:0] r_mem_rs2;
-reg [XLEN-1:0]         r_mem_alu;
+reg [REG_ADDR_LEN-1:0] r_mem_alu_out, r_mem_pc;
 
-reg [REG_ADDR_LEN-1:0] r_wb_rs2;
-reg [XLEN-1:0]         r_wb_wdata, r_wb_inst, r_wb_pc;
+reg [REG_ADDR_LEN-1:0] r_wb_rd;
+reg [6:0]              r_wb_types;
 
 
 /*
@@ -56,7 +56,11 @@ always@(posedge clk)begin
     if(~rst_n) begin
         PC <= PC_RESET;
     end else begin
-        PC <= PC + 32'd4;
+        if(ex_type_J)
+            PC <= alu_out;
+        else
+            PC <= PC + 32'h1;
+        end
     end
 end
 /*
@@ -99,11 +103,11 @@ instruction_decoder unit_id(
 
 register_file unit_regfile(
     .clk(clk),
-    .wr_en(1'b0),
+    .wr_en(wb_en),
     .rs1(rs1),
     .rs2(rs2),
     .wr_addr(wb_rd),
-    .wr_data(r_wb_wdata),
+    .wr_data(wb_wdata),
     .rd_data_1(r_data1),
     .rd_data_2(r_data2)
 );
@@ -153,23 +157,21 @@ ALU_TOP unit_alu(
     .FUNCT3(r_ex_funct3),
     .FUNCT7(r_ex_funct7),
     .TYPES(r_ex_types),
-    .ALU_OUT(wdata)
+    .ALU_OUT(alu_out)
 );
+
+assign ex_type_J = r_ex_types[2];
 
 /*
 * stage #4 pipeline begin (memory)
 */
 always@(posedge clk)begin
     if(~rst_n) begin
-        r_mem_pc    <= PC_RESET;
-        r_mem_rs2   <= 32'h0;
-        r_mem_inst  <= 32'h0;
-        r_mem_wdata <= 32'h0;
+        r_mem_pc      <= PC_RESET;
+        r_mem_alu_out <= 32'h0;
     end else begin
-        r_mem_pc    <= r_ex_pc;
-        r_mem_rs2   <= r_ex_rs2;
-        r_mem_inst  <= r_ex_inst;
-        r_mem_wdata <= wdata;
+        r_mem_pc      <= r_ex_pc;
+        r_mem_alu_out <= alu_out;
     end
 end
 /*
@@ -179,17 +181,18 @@ end
 /*
 * Data Cache
 * - This module takes one clock cycles
-* - It bypass memory pipeline stage hence addr uses wdata not r_mem_wdata
+* - It bypass memory pipeline stage hence addr uses alu_out not r_mem_alu_out
 * - LOAD/STORE data value is present in rs_2 which will be taken from r_ex_rs2 to bypass memory pipeline stage
 * - types[3] == 1 for S-type instructions which means a store operation.
 */
 data_cache unit_dcache (
     .clk(clk),
     .rst_n(rst_n),
-    .addr(w_data),
-    .funct3(),
-    .w_en(types[3]),
-    .w_data(r_ex_rs2)
+    .addr(alu_out),
+    .funct3(r_ex_funct3),
+    .types(r_ex_types),
+    .w_data(r_ex_rs2),
+    .r_data(mem_data)
 );
 
 /*
@@ -197,19 +200,30 @@ data_cache unit_dcache (
 */
 always@(posedge clk)begin
     if(~rst_n) begin
-        r_wb_rs2    <= 32'h0;
-        r_wb_wdata  <= 32'h0;
-        r_wb_inst   <= 32'h0;
+        r_wb_rd     <= 32'h0;
+        r_wb_types  <= 7'h0;
     end else begin
-        r_wb_rs2    <= r_mem_rs2;
-        r_wb_wdata  <= r_mem_wdata;
-        r_wb_inst   <= r_mem_inst;
+        r_wb_rd     <= r_ex_rd;
+        r_wb_types  <= r_ex_types;
     end
 end
 /*
 * stage #5 pipeline end
 */
 
-assign wb_rd = r_wb_inst[11:7];
+assign wb_type_L = r_wb_types[4];
+assign wb_type_S = r_wb_types[3];
+assign wb_type_J = r_wb_types[2];
+
+always @(*) begin
+    case ({wb_type_L, wb_type_J})
+        2'b10   : wb_data = mem_data;
+        2'b01   : wb_data = r_mem_pc + 32'h1;
+        default : wb_data = r_mem_alu_out;
+    endcase
+end
+
+assign wb_en     = (wb_type_S)?  1'b0 : 1'b1;               // Store commands do not write to register file
+assign wb_rd     = r_wb_rd;
 
 endmodule

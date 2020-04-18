@@ -25,17 +25,19 @@ module instruction_decoder#(
     localparam LUI    = 7'b0110111;
     localparam AUIPC  = 7'b0010111;
 
-    wire is_type_R, is_type_I, is_type_L, is_type_S, is_type_B, is_type_U, is_type_J;
+    wire is_type_R, is_type_I, is_type_L, is_type_S, is_type_J, is_type_B, is_type_U;
     wire [6:0] types = {is_type_R, is_type_I, is_type_L, is_type_S, is_type_J, is_type_B, is_type_U};
 
     /*
     * Type
+    * - Special notes
+    *   - JALR is actually encoded as an I-type instruction. However we also set is_type_J=1 for JALR since we use this signal to jump
     */
     assign is_type_R = (opcode == OP    )? 1'b1 : 1'b0;
-    assign is_type_I = (opcode == OP_IMM)? 1'b1 : 1'b0;
+    assign is_type_I = (opcode == OP_IMM || opcode == JALR )? 1'b1 : 1'b0;
     assign is_type_L = (opcode == LOAD  )? 1'b1 : 1'b0;
     assign is_type_S = (opcode == STORE )? 1'b1 : 1'b0;
-    assign is_type_J = (opcode == JAL  || opcode == JALR  )? 1'b1 : 1'b0;
+    assign is_type_J = (opcode == JAL  || opcode == JALR )? 1'b1 : 1'b0;
     assign is_type_B = (opcode == BRANCH)? 1'b1 : 1'b0;
     assign is_type_U = (opcode == LUI  || opcode == AUIPC )? 1'b1 : 1'b0;
 

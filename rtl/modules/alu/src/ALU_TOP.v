@@ -19,7 +19,7 @@ wire [DATA_WIDTH-1 : 0] bus_B;
 wire [3: 0]             alu_ctrl;
 
 wire is_type_R, is_type_I, is_type_L, is_type_S, is_type_J, is_type_B, is_type_U;
-wire is_mem_op;
+wire op_add,op_jal;
 
 /*
 * Type
@@ -32,14 +32,15 @@ assign is_type_J = types[2];
 assign is_type_B = types[1];
 assign is_type_U = types[0];
 
-assign is_mem_op = is_type_L | is_type_S;
+assign op_add = is_type_L | is_type_S | is_type_J;
+assign op_jal = (is_type_J & ~is_type_I) | is_type_B;   // (J & ~I) captures the JALR which should use RS1 
 
 
 Mux_2_to_1 MUX_UP(
     .in_1(PC_IN), 
     .in_2(RS1_IN), 
     .out(bus_A), 
-    .CTRL(is_type_B | is_type_J)
+    .CTRL(op_jal)
     );
 
 Mux_2_to_1 MUX_DOWN(
@@ -63,7 +64,7 @@ Mux_2_to_1 MUX_DOWN(
 //  110-0 : OR
 //  111-0 : AND
 //*************************************************
-assign alu_ctrl = (is_mem_op)? 4'b0000 : { FUNCT3, FUNCT7[5] };
+assign alu_ctrl = (op_add)? 4'b0000 : { FUNCT3, FUNCT7[5] };
 
 
 ALU alu_a(
