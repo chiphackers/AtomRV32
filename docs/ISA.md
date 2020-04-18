@@ -29,6 +29,16 @@
 |  8 | 0000000 | shamt |     |   101  |    | 0010011 | SRLI  | rd = rs1 >> shamt       |
 |  9 | 0100000 | shamt |     |   101  |    | 0010011 | SRAI  | rd = S(rs1 >> shamt)    |
 
+# Control operations
+
+| No | imm 19                    | rd | opcode  | Assem | Sym                          |
+| -- | ------------------------- | -- | ------- | ----- | -----------------------------|
+|  1 |                           |    | 1101111 | JAL   | rd = PC+4; PC = PC + S(imm19)|
+
+| No | imm 12     | rs1 | func 3 | rd | opcode  | Assem | Sym                          |
+| -- | ---------- | --- | ------ | -- | ------- | ----- | -----------------------------|
+|  1 |            |     |   000  |    | 1100111 | JALR  | rd = PC+4; PC = rs1+S(imm12) |
+
 
 # Memory operations
 
@@ -42,7 +52,7 @@
 |  4 |                 |     |   100  |    | 0000011 | LBU   | rd = mem(rs1+S(offset))[7:0]  |
 |  5 |                 |     |   101  |    | 0000011 | LHU   | rd = mem(rs1+S(offset))[15:0] |
 
-## S-type encoded
+## S-type encoded (STORE)
 
 | No | imm 12[11:5] | rs2 | rs1 | func 3 | imm12[4:0] | opcode  | Assem | Sym                           | 
 | -- | ------------ | --- | --- | ------ | ---------- | ------- | ----- | ----------------------------- |
