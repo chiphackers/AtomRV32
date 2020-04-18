@@ -43,7 +43,7 @@ reg [2:0]              r_ex_funct3;
 reg [6:0]              r_ex_funct7, r_ex_types;
 
 reg [REG_ADDR_LEN-1:0] r_mem_rs2;
-reg [XLEN-1:0]         r_mem_wdata, r_mem_inst, r_mem_pc;
+reg [XLEN-1:0]         r_mem_alu;
 
 reg [REG_ADDR_LEN-1:0] r_wb_rs2;
 reg [XLEN-1:0]         r_wb_wdata, r_wb_inst, r_wb_pc;
@@ -81,6 +81,9 @@ end
 
 /*
 * Module instantiation
+*
+* types is a 7-bit wide bus which indicate the type of opcode
+* types = {is_type_R, is_type_I, is_type_L, is_type_S, is_type_J, is_type_B, is_type_U};
 */
 
 instruction_decoder unit_id(
@@ -175,21 +178,18 @@ end
 
 /*
 * Data Cache
-* - This module takes two clock cycles
-* - It bypass memory pipeline stage and directly write back to register file
+* - This module takes one clock cycles
+* - It bypass memory pipeline stage hence addr uses wdata not r_mem_wdata
+* - LOAD/STORE data value is present in rs_2 which will be taken from r_ex_rs2 to bypass memory pipeline stage
+* - types[3] == 1 for S-type instructions which means a store operation.
 */
 data_cache unit_dcache (
     .clk(clk),
     .rst_n(rst_n),
-    .data_addr(wdata),
-    .data_i(r_mem_rs2),
-    .data_o(mem_data),
-    .OPCODE(r_mem_inst[6:0]),
-    .FUNCT3(r_mem_inst[2:0]),
-    .mem_in(mem_in),
-    .mem_out(mem_out),
-    .mem_addr(mem_addr),
-    .mem_ctrl(mem_ctrl)
+    .addr(w_data),
+    .funct3(),
+    .w_en(types[3]),
+    .w_data(r_ex_rs2)
 );
 
 /*
