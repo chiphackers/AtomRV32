@@ -28,7 +28,7 @@ wire [6:0]               opcode;
 wire [2:0]               funct3;
 wire [6:0]               funct7, types;
 wire [XLEN-1: 0]         r_data1, r_data2, alu_out, im_data, mem_data, wb_wdata;
-wire                     ex_type_J, wb_en, wb_type_L, wb_type_S, wb_type_J;
+wire                     w_take_branch, ex_type_J, ex_type_B, wb_en, wb_type_L, wb_type_S, wb_type_J;
 
 /*
 * pipeline registers
@@ -56,7 +56,7 @@ always@(posedge clk)begin
     if(~rst_n) begin
         PC <= PC_RESET;
     end else begin
-        if(ex_type_J)
+        if(w_take_branch)
             PC <= alu_out;
         else
             PC <= PC + 32'h1;
@@ -160,7 +160,31 @@ ALU_TOP unit_alu(
     .ALU_OUT(alu_out)
 );
 
+/*
+* take_branch logic
+* - if taken PC will be changed
+* - JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU
+*/
 assign ex_type_J = r_ex_types[2];
+assign ex_type_B = r_ex_types[1];
+
+always @ (*) begin
+    if(ex_type_J)
+        w_take_branch = 1'b1;   // JAL and JALR
+    else if(ex_type_B) begin
+        case(r_ex_funct3)
+            3'b000 : w_take_branch = (r_ex_rs1 == r_ex_rs2)? 1'b1 : 1'b0;                       // BEQ
+            3'b001 : w_take_branch = (r_ex_rs1 ~= r_ex_rs2)? 1'b1 : 1'b0;                       // BNE
+            3'b100 : w_take_branch = ($signed(r_ex_rs1) <  $signed(r_ex_rs2))? 1'b1 : 1'b0;     // BLT
+            3'b101 : w_take_branch = ($signed(r_ex_rs1) >= $signed(r_ex_rs2))? 1'b1 : 1'b0;     // BGE
+            3'b110 : w_take_branch = (r_ex_rs1 <  r_ex_rs2)? 1'b1 : 1'b0;                       // BLTU
+            3'b111 : w_take_branch = (r_ex_rs1 >= r_ex_rs2)? 1'b1 : 1'b0;                       // BGEU
+            default: w_take_branch = 1'b0;
+        endcase
+    end else begin
+        w_take_branch = 1'b0;
+    end
+end
 
 /*
 * stage #4 pipeline begin (memory)
