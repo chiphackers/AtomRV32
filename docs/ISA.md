@@ -25,11 +25,13 @@
 |  4 |                 |     |   100  |    | 0010011 | XORI  | rd = rs1 ^ S(imm)       |
 |  5 |                 |     |   110  |    | 0010011 | ORI   | rd = rs1 or S(imm)      |
 |  6 |                 |     |   111  |    | 0010011 | ANDI  | rd = rs1 & S(imm)       |
-|  7 | 0000000 | shamt |     |   001  |    | 0010011 | SLLI  | rd = rs1 << shamt       |
-|  8 | 0000000 | shamt |     |   101  |    | 0010011 | SRLI  | rd = rs1 >> shamt       |
-|  9 | 0100000 | shamt |     |   101  |    | 0010011 | SRAI  | rd = S(rs1 >> shamt)    |
+|  7 | 0000000 - shamt |     |   001  |    | 0010011 | SLLI  | rd = rs1 << shamt       |
+|  8 | 0000000 - shamt |     |   101  |    | 0010011 | SRLI  | rd = rs1 >> shamt       |
+|  9 | 0100000 - shamt |     |   101  |    | 0010011 | SRAI  | rd = S(rs1 >> shamt)    |
 
 # Control operations
+
+## J-type encoded (Unconditional Jumps)
 
 | No | imm 19                    | rd | opcode  | Assem | Sym                          |
 | -- | ------------------------- | -- | ------- | ----- | -----------------------------|
@@ -39,6 +41,16 @@
 | -- | ---------- | --- | ------ | -- | ------- | ----- | -----------------------------|
 |  1 |            |     |   000  |    | 1100111 | JALR  | rd = PC+4; PC = rs1+S(imm12) |
 
+## B-type encoded (Conditional Jumps)
+
+| No | imm 12:10-5 | rs2 | rs1 | func 3 | imm 4-1:11 | opcode  | Assem | Sym                             | 
+| -- | ------------| --- | --- | ------ | ---------- | ------- | ----- |---------------------------------|
+|  1 |             |     |     |   000  |            | 1100011 | BEQ   | if(rs1 == rs2) PC += imm        |
+|  2 |             |     |     |   001  |            | 1100011 | BNE   | if(rs1 != rs2) PC += imm        |
+|  3 |             |     |     |   100  |            | 1100011 | BLT   | if(S(rs1) <  S(rs2)) PC += imm  |
+|  4 |             |     |     |   101  |            | 1100011 | BGE   | if(S(rs1) >= S(rs2)) PC += imm  |
+|  5 |             |     |     |   110  |            | 1100011 | BLTU  | if(rs1 <  rs2) PC += imm        |
+|  6 |             |     |     |   111  |            | 1100011 | BGEU  | if(rs1 >= rs2) PC += imm        |
 
 # Memory operations
 
