@@ -29,6 +29,13 @@
 |  8 | 0000000 - shamt |     |   101  |    | 0010011 | SRLI  | rd = rs1 >> shamt       |
 |  9 | 0100000 - shamt |     |   101  |    | 0010011 | SRAI  | rd = S(rs1 >> shamt)    |
 
+## Immediate(U-type) instruction
+
+| No | imm 20                         | rd | opcode  | Assem | Sym                     |
+| -- | ------------------------------ | -- | ------- | ----- | ------------------------|
+|  1 |                                |    | 0110111 | LUI   | rd = {imm,12{1'b0}}     |
+|  2 |                                |    | 0010111 | AUIPC | rd = PC + {imm,12{1'b0}}|
+
 # Control operations
 
 ## J-type encoded (Unconditional Jumps)
