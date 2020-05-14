@@ -9,7 +9,7 @@ If you have any questions about the processor please use ChipHackers RISC-V foru
 
 # CPU Architecture
 
-![AtomRV32 Architecture](https://chiphackers.com/wp-content/uploads/2018/03/drawit-diagram-2-1536x619.png)
+![AtomRV32 Architecture](https://chiphackers.com/wp-content/uploads/bp-attachments/258/draft_architecture.png)
 
 # Contributors
 
