@@ -28,7 +28,8 @@ wire [6:0]               opcode;
 wire [2:0]               funct3;
 wire [6:0]               funct7, types;
 wire [XLEN-1: 0]         r_data1, r_data2, alu_out, im_data, mem_data, wb_wdata;
-wire                     w_take_branch, ex_type_J, ex_type_B, wb_en, wb_type_L, wb_type_S, wb_type_J;
+wire                     ex_type_J, ex_type_B, ex_type_U, wb_en, wb_type_L, wb_type_S, wb_type_J;
+wire                     w_take_branch, w_op_auipc;
 
 /*
 * pipeline registers
@@ -41,7 +42,7 @@ reg [XLEN-1: 0]        r_de_pc, r_de_inst;
 reg [REG_ADDR_LEN-1:0] r_ex_rs1, r_ex_rs2, r_ex_rd;
 reg [XLEN-1:0]         r_ex_inst, r_ex_pc, r_ex_imm;
 reg [2:0]              r_ex_funct3;
-reg [6:0]              r_ex_funct7, r_ex_types;
+reg [6:0]              r_ex_opcode, r_ex_funct7, r_ex_types;
 
 reg [REG_ADDR_LEN-1:0] r_mem_alu_out, r_mem_pc;
 
@@ -130,6 +131,7 @@ always@(posedge clk) begin
         r_ex_rs2    <= 32'h0;
         r_ex_rd     <= 32'h0;
         r_ex_imm    <= 32'h0;
+        r_ex_opcode <= 7'h0;
         r_ex_funct3 <= 3'h0;
         r_ex_funct7 <= 7'h0;
         r_ex_types  <= 7'h0;
@@ -138,7 +140,8 @@ always@(posedge clk) begin
         r_ex_rs1    <= r_data1;
         r_ex_rs2    <= r_data2;
         r_ex_rd     <= rd;
-        r_ex_imm    <- im_data;
+        r_ex_imm    <= im_data;
+        r_ex_opcode <= opcode;
         r_ex_funct3 <= func3;
         r_ex_funct7 <= funct7;
         r_ex_types  <= types;
@@ -154,6 +157,7 @@ ALU_TOP unit_alu(
     .RS1_IN(r_ex_rs1),
     .RS2_IN(r_ex_rs2),
     .IMM_IN(r_ex_imm),
+    .OPCODE(r_ex_opcode),
     .FUNCT3(r_ex_funct3),
     .FUNCT7(r_ex_funct7),
     .TYPES(r_ex_types),
